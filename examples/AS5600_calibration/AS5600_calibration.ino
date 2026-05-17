@@ -119,7 +119,7 @@ void obradiStanja()
         kalibracija.saveToEEPROM();
         Serial.print("Spremljeno 180°: ");
         Serial.println(kalibracija.getCalibrationMax());
-        Serial.println("Kalibracija zavrsena.");
+        Serial.println("Kalibracija završena.");
         stanje = NORMALAN_RAD;
       }
       break;

@@ -1,5 +1,5 @@
 //
-//    FILE: AS56000.cpp
+//    FILE: AS5600.cpp
 //  AUTHOR: Rob Tillaart
 // VERSION: 0.6.7
 // PURPOSE: Arduino library for AS5600 magnetic rotation meter
@@ -429,7 +429,7 @@ void AS5600::resetPOR()
 //
 //  void AS5600::burnAngle()
 //  {
-//    writeReg(AS5600_BURN, x0x80);
+//    writeReg(AS5600_BURN, 0x80);
 //    delay(2);
 //    resetPOR();
 //  }
@@ -641,7 +641,7 @@ uint8_t AS5600::writeReg2(uint8_t reg, uint16_t value)
 //
 AS5600L::AS5600L(uint8_t address, TwoWire *wire) : AS5600(wire)
 {
-  _address = address;;   //  0x40 = default address AS5600L.
+  _address = address;   //  0x40 = default address AS5600L.
 }
 
 
@@ -832,4 +832,3 @@ void AS5600Calibrator::setSettings(const AS5600CalibrationSettings &settings)
 
 
 //  -- END OF FILE --
-
