@@ -1,7 +1,7 @@
 //
 //    FILE: AS5600.cpp
 //  AUTHOR: Rob Tillaart
-// VERSION: 0.6.7
+// VERSION: 2.0.0
 // PURPOSE: Arduino library for AS5600 magnetic rotation meter
 //    DATE: 2022-05-28
 //     URL: https://github.com/RobTillaart/AS5600
@@ -393,19 +393,19 @@ uint16_t AS5600::readMagnitude()
 
 bool AS5600::magnetDetected()
 {
-  return (readStatus() & AS5600_MAGNET_DETECT) > 1;
+  return (readStatus() & AS5600_MAGNET_DETECT) != 0;
 }
 
 
 bool AS5600::magnetTooStrong()
 {
-  return (readStatus() & AS5600_MAGNET_HIGH) > 1;
+  return (readStatus() & AS5600_MAGNET_HIGH) != 0;
 }
 
 
 bool AS5600::magnetTooWeak()
 {
-  return (readStatus() & AS5600_MAGNET_LOW) > 1;
+  return (readStatus() & AS5600_MAGNET_LOW) != 0;
 }
 
 

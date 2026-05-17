@@ -12,7 +12,7 @@
 #include "Wire.h"
 
 
-#define AS5600_LIB_VERSION              (F("2.0.0"))
+#define AS5600_LIB_VERSION              ("2.0.0")
 
 
 //  default addresses
@@ -257,7 +257,7 @@ public:
   int32_t  getCumulativePosition(bool update = true);
   //  converts last position to whole revolutions.
   int32_t  getRevolutions();
-  //  resets position only (not the i)
+  //  resets position only (not the internal lastPosition)
   //  returns last position but not internal lastPosition.
   int32_t  resetPosition(int32_t position = 0);
   //  resets position and internal lastPosition
@@ -363,4 +363,3 @@ private:
 
 
 //  -- END OF FILE --
-
