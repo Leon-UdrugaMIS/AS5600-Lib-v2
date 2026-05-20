@@ -94,3 +94,7 @@ not exposed by this library—refer to the AS5600L datasheet.
   - working-zero adjustment
   - EEPROM persistence
   - Dasduino CORE wiring and button flow
+
+## Tutorials and full sketches
+See [TUTORIALS.md](TUTORIALS.md) for complete, simplified examples with full
+includes and code walkthroughs for every feature and new calibrator function.
