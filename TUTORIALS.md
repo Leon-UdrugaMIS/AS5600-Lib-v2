@@ -15,6 +15,7 @@ void setup()
   Wire.begin();
   if (!sensor.begin())
   {
+    Serial.println("AS5600 not detected.");
     while (true) { delay(1000); }
   }
 }
@@ -242,6 +243,8 @@ void loop()
 ```
 
 ## 8) Cumulative position, revolutions, reset helpers
+The reset below keeps the counter small for a quick demo; remove it for
+continuous tracking.
 ```cpp
 #include <Wire.h>
 #include <AS5600.h>
