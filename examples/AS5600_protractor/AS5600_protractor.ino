@@ -5,7 +5,7 @@ AS5600 sensor;
 AS5600Calibrator calibrator;
 
 const uint32_t SERIAL_BAUD = 115200;
-const int EEPROM_ADDRESS = 0;
+const uint16_t EEPROM_ADDRESS = 0;
 const unsigned long READ_DELAY_MS = 100;
 
 uint16_t readRawAngle()
@@ -79,7 +79,7 @@ void loop()
 {
   if (Serial.available())
   {
-    char command = static_cast<char>(Serial.read());
+    int command = Serial.read();
     if (command == 'c' || command == 'C')
     {
       runCalibration();
