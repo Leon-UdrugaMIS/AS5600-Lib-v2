@@ -24,4 +24,3 @@ void loop()
   Serial.println(degrees, 2);
   delay(100);
 }
-

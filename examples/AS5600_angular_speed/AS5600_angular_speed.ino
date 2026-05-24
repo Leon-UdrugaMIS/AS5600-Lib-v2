@@ -27,4 +27,3 @@ void loop()
   Serial.println(rps, 2);
   delay(200);
 }
-

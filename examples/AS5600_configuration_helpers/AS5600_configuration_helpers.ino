@@ -36,4 +36,3 @@ void loop()
   Serial.println(sensor.getWatchDog());
   delay(500);
 }
-

@@ -23,4 +23,3 @@ void loop()
   Serial.println(offset, 2);
   delay(100);
 }
-

@@ -33,4 +33,3 @@ void loop()
   Serial.println(conf, HEX);
   delay(250);
 }
-

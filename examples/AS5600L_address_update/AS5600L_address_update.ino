@@ -17,4 +17,3 @@ void loop()
   Serial.println(sensorL.getAddress(), HEX);
   delay(1000);
 }
-
