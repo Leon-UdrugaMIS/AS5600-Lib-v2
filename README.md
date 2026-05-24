@@ -89,15 +89,19 @@ Note: making the new address permanent requires OTP burn operations, which are
 not exposed by this library—refer to the AS5600L datasheet.
 
 ## Examples
-- `examples/AS5600_calibration/AS5600_calibration.ino` demonstrates:
-  - 0° / 180° calibration with wraparound handling
-  - working-zero adjustment
-  - EEPROM persistence
-  - Dasduino CORE wiring and button flow
-- `examples/AS5600_protractor/AS5600_protractor.ino` demonstrates:
-  - Protractor-style 0°–180° output
-  - Serial-guided 0° / 180° calibration
-  - EEPROM load/save of calibration data
+The `examples/` folder now includes one sketch for each code example in
+[TUTORIALS.md](TUTORIALS.md):
+- `examples/AS5600_basic_raw_angle/AS5600_basic_raw_angle.ino`
+- `examples/AS5600_offset_angle/AS5600_offset_angle.ino`
+- `examples/AS5600_status_agc/AS5600_status_agc.ino`
+- `examples/AS5600_direction_control/AS5600_direction_control.ino`
+- `examples/AS5600_registers/AS5600_registers.ino`
+- `examples/AS5600_configuration_helpers/AS5600_configuration_helpers.ino`
+- `examples/AS5600_angular_speed/AS5600_angular_speed.ino`
+- `examples/AS5600_cumulative_position/AS5600_cumulative_position.ino`
+- `examples/AS5600L_address_update/AS5600L_address_update.ino`
+- `examples/AS5600_calibration/AS5600_calibration.ino`
+- `examples/AS5600_protractor/AS5600_protractor.ino`
 
 ## Tutorials and full sketches
 See [TUTORIALS.md](TUTORIALS.md) for complete, simplified examples with full

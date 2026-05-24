@@ -1,187 +1,102 @@
 #include <Wire.h>
 #include <AS5600.h>
 
-AS5600 senzor;
-AS5600Calibrator kalibracija;
+AS5600 sensor;
+AS5600Calibrator calibrator;
 
-const uint8_t PIN_TIPKALO = A0;
+const uint32_t SERIAL_BAUD = 115200;
+const int EEPROM_ADDRESS = 0;
+const unsigned long READ_DELAY_MS = 100;
 
-const unsigned long DEBOUNCE_MS = 25;
-const unsigned long DUGI_PRITISAK_MS = 1000;
-const unsigned long STARTNI_PROZOR_MS = 2000;
-const unsigned long PERIOD_ISPISA_MS = 100;
-
-enum StanjeRada {
-  STARTNI_PROZOR,
-  KALIBRACIJA_NULA,
-  KALIBRACIJA_180,
-  NORMALAN_RAD
-};
-
-StanjeRada stanje = STARTNI_PROZOR;
-
-bool prethodnoStanjeTipkala = HIGH;
-unsigned long vrijemePromjeneTipkala = 0;
-unsigned long vrijemePritiskaTipkala = 0;
-bool dugiPritisakObraden = false;
-
-unsigned long vrijemePokretanja = 0;
-unsigned long zadnjiIspis = 0;
-
-uint16_t ocitajSirovuVrijednost()
+uint16_t readRawAngle()
 {
-  return senzor.rawAngle() & AS5600_RAW_MASK;
+  return sensor.rawAngle() & AS5600_RAW_MASK;
 }
 
-uint8_t ocitajDogadajTipkala()
+void waitForUser(const char *message)
 {
-  bool stanjeTipkala = digitalRead(PIN_TIPKALO);
-  unsigned long sada = millis();
-
-  if (stanjeTipkala != prethodnoStanjeTipkala)
+  Serial.println(message);
+  while (!Serial.available())
   {
-    vrijemePromjeneTipkala = sada;
-    prethodnoStanjeTipkala = stanjeTipkala;
+    delay(10);
   }
-
-  if ((sada - vrijemePromjeneTipkala) <= DEBOUNCE_MS)
+  while (Serial.available())
   {
-    return 0;
+    Serial.read();
   }
-
-  static bool biloPritisnuto = false;
-  bool pritisnuto = (stanjeTipkala == LOW);
-
-  if (pritisnuto && !biloPritisnuto)
-  {
-    vrijemePritiskaTipkala = sada;
-    dugiPritisakObraden = false;
-  }
-
-  if (pritisnuto && !dugiPritisakObraden && (sada - vrijemePritiskaTipkala >= DUGI_PRITISAK_MS))
-  {
-    dugiPritisakObraden = true;
-    biloPritisnuto = pritisnuto;
-    return 2;
-  }
-
-  if (!pritisnuto && biloPritisnuto)
-  {
-    unsigned long trajanje = sada - vrijemePritiskaTipkala;
-    if (trajanje >= DEBOUNCE_MS && trajanje < DUGI_PRITISAK_MS)
-    {
-      biloPritisnuto = pritisnuto;
-      return 1;
-    }
-  }
-
-  biloPritisnuto = pritisnuto;
-  return 0;
+  delay(100);
 }
 
-void obradiStanja()
+void runCalibration()
 {
-  uint8_t dogadaj = ocitajDogadajTipkala();
-  unsigned long sada = millis();
+  Serial.println("Starting 0-180 calibration.");
 
-  switch (stanje)
-  {
-    case STARTNI_PROZOR:
-      if (dogadaj == 1 || dogadaj == 2)
-      {
-        stanje = KALIBRACIJA_NULA;
-        Serial.println("Ulazak u kalibraciju.");
-        Serial.println("Postavi krak na 0° i pritisni tipkalo.");
-      }
-      else if ((sada - vrijemePokretanja) >= STARTNI_PROZOR_MS)
-      {
-        stanje = NORMALAN_RAD;
-        Serial.println("Normalan rad.");
-      }
-      break;
+  waitForUser("Place the magnet at 0 degrees, then send any key.");
+  uint16_t rawAt0 = readRawAngle();
+  calibrator.setCalibrationMin(rawAt0);
+  Serial.print("Saved 0 deg raw = ");
+  Serial.println(rawAt0);
 
-    case KALIBRACIJA_NULA:
-      if (dogadaj == 1)
-      {
-        kalibracija.setCalibrationMin(ocitajSirovuVrijednost());
-        Serial.print("Spremljeno 0°: ");
-        Serial.println(kalibracija.getCalibrationMin());
-        stanje = KALIBRACIJA_180;
-        Serial.println("Postavi krak na 180° i pritisni tipkalo.");
-      }
-      break;
+  waitForUser("Place the magnet at 180 degrees, then send any key.");
+  uint16_t rawAt180 = readRawAngle();
+  calibrator.setCalibrationMax(rawAt180);
+  calibrator.setWorkingZeroCentiDegrees(0);
+  calibrator.saveToEEPROM(EEPROM_ADDRESS);
 
-    case KALIBRACIJA_180:
-      if (dogadaj == 1)
-      {
-        kalibracija.setCalibrationMax(ocitajSirovuVrijednost());
-        kalibracija.setWorkingZeroCentiDegrees(0);
-        kalibracija.saveToEEPROM();
-        Serial.print("Spremljeno 180°: ");
-        Serial.println(kalibracija.getCalibrationMax());
-        Serial.println("Kalibracija završena.");
-        stanje = NORMALAN_RAD;
-      }
-      break;
-
-    case NORMALAN_RAD:
-      if (dogadaj == 1)
-      {
-        uint16_t raw = ocitajSirovuVrijednost();
-        kalibracija.setWorkingZeroCentiDegrees(kalibracija.computeCalibratedAngleCentiDegrees(raw));
-        kalibracija.saveToEEPROM();
-        Serial.println("Postavljena nova radna nula.");
-      }
-      break;
-  }
+  Serial.print("Saved 180 deg raw = ");
+  Serial.println(rawAt180);
+  Serial.println("Calibration stored in EEPROM.");
 }
 
 void setup()
 {
-  pinMode(PIN_TIPKALO, INPUT_PULLUP);
+  Serial.begin(SERIAL_BAUD);
   Wire.begin();
-  senzor.begin();
-  Serial.begin(9600);
-  delay(300);
 
-  kalibracija.loadFromEEPROM();
+  if (!sensor.begin())
+  {
+    Serial.println("AS5600 not detected.");
+    while (true)
+    {
+      delay(1000);
+    }
+  }
 
-  vrijemePokretanja = millis();
-  Serial.println("Kutomjer pokrenut.");
-  Serial.println("U prve 2 sekunde moguc je ulazak u kalibraciju.");
-  Serial.println("Kratki pritisak u normalnom radu postavlja radnu nulu.");
+  bool hasCalibration = calibrator.loadFromEEPROM(EEPROM_ADDRESS);
+  if (!hasCalibration)
+  {
+    Serial.println("No calibration in EEPROM.");
+    runCalibration();
+  }
+  else
+  {
+    Serial.println("Calibration loaded from EEPROM.");
+    Serial.println("Send 'c' to recalibrate.");
+  }
 }
 
 void loop()
 {
-  obradiStanja();
-
-  unsigned long sada = millis();
-  if ((sada - zadnjiIspis) >= PERIOD_ISPISA_MS)
+  if (Serial.available())
   {
-    zadnjiIspis = sada;
-    uint16_t raw = ocitajSirovuVrijednost();
-
-    if (stanje == KALIBRACIJA_NULA)
+    char command = static_cast<char>(Serial.read());
+    if (command == 'c' || command == 'C')
     {
-      Serial.println("Kalibracija: cekam spremanje 0°");
+      runCalibration();
     }
-    else if (stanje == KALIBRACIJA_180)
+    while (Serial.available())
     {
-      Serial.println("Kalibracija: cekam spremanje 180°");
-    }
-    else
-    {
-      uint16_t kalibriraniKut = kalibracija.computeCalibratedAngleCentiDegrees(raw);
-      uint16_t kutZaPrikaz = kalibracija.computeDisplayAngleCentiDegrees(raw);
-
-      Serial.print("Ocitana sirova vrijednost kuta = ");
-      Serial.println(raw);
-      Serial.print("Preracunata vrijednost u stupnjevima = ");
-      Serial.println(kutZaPrikaz / 100.0, 2);
-      Serial.print("Kalibrirani kut = ");
-      Serial.println(kalibriraniKut / 100.0, 2);
-      Serial.println();
+      Serial.read();
     }
   }
+
+  uint16_t raw = readRawAngle();
+  float protractorDeg = calibrator.computeCalibratedAngleDegrees(raw);
+
+  Serial.print("Raw: ");
+  Serial.print(raw);
+  Serial.print("  Protractor (0-180): ");
+  Serial.println(protractorDeg, 2);
+  delay(READ_DELAY_MS);
 }
+
