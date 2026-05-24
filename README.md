@@ -94,6 +94,10 @@ not exposed by this library—refer to the AS5600L datasheet.
   - working-zero adjustment
   - EEPROM persistence
   - Dasduino CORE wiring and button flow
+- `examples/AS5600_protractor/AS5600_protractor.ino` demonstrates:
+  - Protractor-style 0°–180° output
+  - Serial-guided 0° / 180° calibration
+  - EEPROM load/save of calibration data
 
 ## Tutorials and full sketches
 See [TUTORIALS.md](TUTORIALS.md) for complete, simplified examples with full
